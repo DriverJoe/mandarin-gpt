@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mandarin Conversation App</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+    .message { margin: 1rem 0; padding: 0.5rem; border-radius: 5px; }
+    .user { background-color: #e6f7ff; }
+    .bot { background-color: #f0f0f0; }
+    .input-area { display: flex; margin-top: 1rem; }
+    #inputMessage { flex: 1; padding: 0.5rem; }
+    #sendBtn { padding: 0.5rem 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Mandarin Conversation App</h1>
+  <div id="messages"></div>
+  <div class="input-area">
+    <input type="text" id="inputMessage" placeholder="用中文輸入訊息..." />
+    <button id="sendBtn">发送</button>
+  </div>
+  <script>
+    const messagesDiv = document.getElementById('messages');
+    const inputMessage = document.getElementById('inputMessage');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Append a new message to the chat
+    function appendMessage(text, className) {
+      const messageElem = document.createElement('div');
+      messageElem.className = 'message ' + className;
+      messageElem.textContent = text;
+      messagesDiv.appendChild(messageElem);
+    }
+
+    // Send message to server
+    async function sendMessage() {
+      const text = inputMessage.value.trim();
+      if (!text) return;
+      appendMessage(text, 'user');
+      inputMessage.value = '';
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await response.json();
+        appendMessage(data.reply || 'No reply', 'bot');
+      } catch (error) {
+        appendMessage('Error occurred', 'bot');
+        console.error(error);
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    inputMessage.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
